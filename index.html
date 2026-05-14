@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>zzap · Meeting Minutes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ── CONFIG: set your Render backend URL here ─────────────────────────── */
+/* (also set in the JS block below)                                        */
+
+:root {
+  --navy:    #1565a8;
+  --navy-lt: #1a7bbf;
+  --gold:    #29aee6;
+  --gold-lt: #67c8f0;
+  --cream:   #f0f8fd;
+  --white:   #ffffff;
+  --ink:     #0d1f2d;
+  --muted:   #5a7a90;
+  --border:  #b8ddf0;
+  --red:     #c0392b;
+  --green:   #27ae60;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-mono:    'DM Mono', monospace;
+  --font-body:    'Inter', sans-serif;
+
+  --radius: 4px;
+  --shadow: 0 2px 12px rgba(30,45,61,0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────────────────────── */
+.app {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ─────────────────────────────────────────────────────────────── */
+.topbar {
+  grid-column: 1 / -1;
+  background: var(--navy);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  border-bottom: 2px solid var(--gold);
+}
+
+.topbar-brand {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.04em;
+}
+
+.topbar-brand span { color: var(--gold); }
+
+.topbar-tabs {
+  display: flex;
+  gap: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 20px;
+  height: 56px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -2px;
+}
+
+.tab-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+.tab-btn:hover:not(.active) { color: rgba(255,255,255,0.85); }
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────────── */
+.sidebar {
+  background: var(--navy);
+  padding: 28px 24px;
+  overflow-y: auto;
+  border-right: 1px solid rgba(200,169,110,0.15);
+}
+
+.sidebar-section {
+  margin-bottom: 28px;
+}
+
+.sidebar-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+  display: block;
+}
+
+label.field-label {
+  display: block;
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 4px;
+  letter-spacing: 0.03em;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 8px 11px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder { color: rgba(255,255,255,0.25); }
+
+input[type="text"]:focus,
+textarea:focus { border-color: var(--gold); }
+
+textarea { resize: vertical; line-height: 1.5; }
+
+.field-row { margin-bottom: 12px; }
+
+/* ── AUDIO UPLOAD ZONE ───────────────────────────────────────────────────── */
+.upload-zone {
+  border: 1.5px dashed rgba(200,169,110,0.4);
+  border-radius: var(--radius);
+  padding: 18px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--gold);
+  background: rgba(200,169,110,0.06);
+}
+
+.upload-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+}
+
+.upload-zone-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+  display: block;
+  opacity: 0.6;
+}
+
+.upload-zone-text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  display: block;
+}
+
+.upload-zone-hint {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  display: block;
+  margin-top: 4px;
+}
+
+.file-selected {
+  font-size: 11px;
+  color: var(--gold-lt);
+  margin-top: 6px;
+  display: none;
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.divider-or {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  color: rgba(255,255,255,0.25);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.divider-or::before, .divider-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--navy);
+  width: 100%;
+  font-size: 13px;
+  padding: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.btn-primary:hover:not(:disabled) { background: var(--gold-lt); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-ghost {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.btn-ghost:hover { background: rgba(255,255,255,0.12); color: var(--white); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--navy);
+  border: 1px solid var(--border);
+}
+
+.btn-outline:hover { background: var(--cream); border-color: var(--navy); }
+
+/* step pills */
+.step-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.step-pill {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+}
+
+.step-pill.active { color: rgba(255,255,255,0.9); }
+.step-pill.done   { color: var(--gold-lt); }
+
+.step-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.step-pill.done .step-num {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--navy);
+}
+
+/* error */
+.error-msg {
+  font-size: 11px;
+  color: #f08080;
+  margin-top: 8px;
+  display: none;
+}
+
+/* ── MAIN CONTENT ─────────────────────────────────────────────────────────── */
+.main {
+  overflow-y: auto;
+  padding: 32px 36px;
+  background: var(--cream);
+}
+
+/* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.empty-state-sub {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ── PROGRESS ─────────────────────────────────────────────────────────────── */
+.progress-wrap {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.progress-label {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--navy);
+  margin-bottom: 24px;
+}
+
+.progress-bar-track {
+  width: 280px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+.progress-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 12px;
+  font-family: var(--font-mono);
+}
+
+/* ── OUTPUT ─────────────────────────────────────────────────────────────── */
+.output-wrap { display: none; }
+
+.output-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.output-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.output-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── MINUTES DOCUMENT ────────────────────────────────────────────────────── */
+.minutes-doc {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 40px 48px;
+  box-shadow: var(--shadow);
+  max-width: 800px;
+}
+
+.minutes-doc h1 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.minutes-doc .meta-block {
+  border-left: 3px solid var(--gold);
+  padding-left: 14px;
+  margin-bottom: 28px;
+}
+
+.minutes-doc .meta-line {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.minutes-doc .meta-line strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.minutes-doc h2 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin: 28px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--navy);
+}
+
+.minutes-doc hr {
+  display: none;
+}
+
+.minutes-doc table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 4px;
+  min-width: 480px;
+}
+
+.minutes-doc thead th {
+  background: var(--navy);
+  color: var(--white);
+  text-align: left;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.minutes-doc tbody tr:nth-child(odd)  { background: var(--white); }
+.minutes-doc tbody tr:nth-child(even) { background: #f9f7f3; }
+
+.minutes-doc tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #ede9e2;
+  vertical-align: top;
+  line-height: 1.55;
+}
+
+.minutes-doc tbody td:first-child {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  min-width: 90px;
+}
+
+.minutes-doc tbody td:nth-child(2) {
+  font-weight: 500;
+  min-width: 110px;
+  white-space: nowrap;
+}
+
+.minutes-doc ol, .minutes-doc ul {
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.minutes-doc li { margin-bottom: 4px; }
+
+/* ── ARCHIVE TAB ─────────────────────────────────────────────────────────── */
+.archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.archive-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.archive-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 2px 12px rgba(200,169,110,0.15);
+}
+
+.archive-card-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.archive-card-meta {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.archive-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+
+/* ── NOTIFICATION TOAST ─────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.toast.show   { opacity: 1; }
+.toast.success { background: #1a3a2a; color: #7ed3a8; border: 1px solid #2e6647; }
+.toast.error   { background: #3a1a1a; color: #f08080; border: 1px solid #662e2e; }
+
+/* ── MOBILE ──────────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .topbar {
+    height: auto;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .topbar-brand { font-size: 18px; }
+
+  .tab-btn { height: 40px; padding: 0 14px; font-size: 11px; }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 20px 16px;
+    /* sidebar collapses when output is visible on mobile */
+  }
+
+  .sidebar.mobile-collapsed { display: none; }
+
+  .main { padding: 20px 16px; }
+
+  .minutes-doc { padding: 24px 16px; }
+
+  .output-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .output-actions { flex-direction: column; }
+  .output-actions .btn { width: 100%; justify-content: center; }
+
+  .archive-grid { grid-template-columns: 1fr; }
+
+  .empty-state { min-height: 40vh; padding: 20px 0; }
+  .empty-state-title { font-size: 22px; }
+
+  /* hide step pills on mobile to save vertical space */
+  .step-pills { display: none; }
+
+  /* back button shown on mobile when output is visible */
+  .mobile-back-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 14px;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+}
+
+@media (min-width: 701px) {
+  .mobile-back-btn { display: none !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── TOP BAR ──────────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <span class="topbar-brand">zzap <span>·</span> Meeting Minutes</span>
+    <nav class="topbar-tabs" role="tablist">
+      <button class="tab-btn active" id="tab-generate" onclick="switchTab('generate')" role="tab" aria-selected="true">Generate</button>
+      <button class="tab-btn"        id="tab-archive"  onclick="switchTab('archive')"  role="tab" aria-selected="false">Archive</button>
+    </nav>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- GENERATE TAB                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="panel-generate">
+
+    <div class="step-pills" id="step-pills" aria-label="Progress steps">
+      <div class="step-pill active" id="step-1">
+        <span class="step-num">1</span><span>Provide recording or transcript</span>
+      </div>
+      <div class="step-pill" id="step-2">
+        <span class="step-num">2</span><span>Add meeting details</span>
+      </div>
+      <div class="step-pill" id="step-3">
+        <span class="step-num">3</span><span>Generate minutes</span>
+      </div>
+    </div>
+
+    <!-- Audio upload -->
+    <div class="sidebar-section">
+      <span class="sidebar-label">Audio recording</span>
+      <div class="upload-zone" id="upload-zone"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <input type="file" id="audio-file" accept="audio/*,.m4a,.mp3,.wav,.mp4,.webm,.ogg"
+               onchange="onFileChange(event)" aria-label="Upload audio file">
+        <span class="upload-zone-icon">🎙</span>
+        <span class="upload-zone-text">Drop audio file or click to browse</span>
+        <span class="upload-zone-hint">MP3, M4A, WAV, MP4 · large files auto-compressed</span>
+      </div>
+      <span class="file-selected" id="file-selected-name"></span>
+    </div>
+
+    <div class="divider-or">or paste transcript</div>
+
+    <!-- Transcript paste -->
+    <div class="sidebar-section">
+      <label for="transcript-input" class="field-label">Transcript text</label>
+      <textarea id="transcript-input" rows="8"
+        placeholder="Paste Teams auto-transcript, Tactiq export, or any plain-text transcript here…"
+        oninput="onTranscriptChange()"></textarea>
+    </div>
+
+    <!-- Meeting details -->
+    <div class="sidebar-section">
+      <span class="sidebar-label">Meeting details <span style="opacity:.5;font-size:9px">(optional)</span></span>
+      <div class="field-row">
+        <label for="m-title" class="field-label">Title</label>
+        <input type="text" id="m-title" placeholder="e.g. Dashboard Review & Work Plan">
+      </div>
+      <div class="field-row">
+        <label for="m-date" class="field-label">Date</label>
+        <input type="date" id="m-date">
+      </div>
+      <div class="field-row">
+        <label for="m-attendees" class="field-label">Attendees</label>
+        <input type="text" id="m-attendees" placeholder="e.g. Stephen, Ife, Connor">
+      </div>
+    </div>
+
+    <div class="error-msg" id="sidebar-error"></div>
+
+    <button class="btn btn-primary" id="generate-btn" onclick="runPipeline()" disabled>
+      Generate Minutes
+    </button>
+
+  </aside>
+
+  <!-- ── GENERATE MAIN AREA ───────────────────────────────────────────── -->
+  <main class="main" id="main-generate">
+
+    <!-- empty state -->
+    <div class="empty-state" id="empty-state">
+      <div style="max-width:460px;width:100%">
+        <p class="empty-state-title" style="font-size:30px;margin-bottom:6px">Ready to capture<br>your meeting</p>
+        <p class="empty-state-sub" style="margin-bottom:40px">Upload an audio recording or paste a transcript —<br>formatted minutes in seconds.</p>
+        <div style="display:flex;flex-direction:column;gap:14px;text-align:left">
+          <div style="display:flex;gap:16px;align-items:flex-start;background:white;border:1px solid var(--border);border-radius:6px;padding:16px 18px">
+            <span style="font-size:22px;line-height:1">🎙</span>
+            <div><p style="font-weight:500;color:var(--ink);font-size:13px;margin-bottom:2px">Upload audio</p><p style="font-size:12px;color:var(--muted)">MP3, M4A, WAV from Teams, phone recorder, or OBS. Max 25 MB.</p></div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:flex-start;background:white;border:1px solid var(--border);border-radius:6px;padding:16px 18px">
+            <span style="font-size:22px;line-height:1">📋</span>
+            <div><p style="font-weight:500;color:var(--ink);font-size:13px;margin-bottom:2px">Paste transcript</p><p style="font-size:12px;color:var(--muted)">Teams auto-transcript, Tactiq export, or any plain-text transcript.</p></div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:flex-start;background:white;border:1px solid var(--border);border-radius:6px;padding:16px 18px">
+            <span style="font-size:22px;line-height:1">✨</span>
+            <div><p style="font-weight:500;color:var(--ink);font-size:13px;margin-bottom:2px">Generate & export</p><p style="font-size:12px;color:var(--muted)">Minutes formatted in the zzap template — download as .docx or .md.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- progress -->
+    <div class="progress-wrap" id="progress-wrap">
+      <p class="progress-label" id="progress-label">Transcribing audio…</p>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-bar"></div></div>
+      <p class="progress-sub" id="progress-sub">Sending to Groq Whisper</p>
+    </div>
+
+    <!-- output -->
+    <div class="output-wrap" id="output-wrap">
+      <button class="mobile-back-btn" onclick="mobileBack()">← Edit</button>
+      <div class="output-toolbar">
+        <span class="output-title">Meeting Minutes</span>
+        <div class="output-actions">
+          <button class="btn btn-outline" onclick="copyMarkdown()" id="copy-btn">
+            ⎘ Copy Markdown
+          </button>
+          <button class="btn btn-outline" onclick="downloadMarkdown()">
+            ↓ Download .md
+          </button>
+          <button class="btn btn-outline" onclick="downloadDocx()">
+            ↓ Download .docx
+          </button>
+          <button class="btn btn-outline" onclick="saveToArchive()" id="save-btn" style="color:var(--navy);border-color:var(--gold)">
+            ☁ Save to Archive
+          </button>
+        </div>
+      </div>
+      <div class="minutes-doc" id="minutes-doc"></div>
+    </div>
+
+  </main>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- ARCHIVE TAB (hidden initially)                                    -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="panel-archive" style="display:none">
+    <span class="sidebar-label">Browse past meetings</span>
+    <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6">
+      Meetings saved to the archive are stored in Supabase and accessible to everyone on the team.
+    </p>
+  </aside>
+
+  <main class="main" id="main-archive" style="display:none">
+    <div class="archive-grid" id="archive-grid">
+      <div class="archive-empty">Loading archive…</div>
+    </div>
+  </main>
+
+</div><!-- .app -->
+
+<!-- toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ── SCRIPTS ──────────────────────────────────────────────────────────── -->
+<script>
+// ╔═══════════════════════════════════════════════════════════════════════╗
+// ║  CONFIG — update BACKEND_URL after deploying to Render               ║
+// ╚═══════════════════════════════════════════════════════════════════════╝
+const BACKEND_URL = "https://zzap-meeting-minutes.onrender.com";
+// For local dev, set to: "http://localhost:8000"
+
+// ── state ────────────────────────────────────────────────────────────────
+let currentMd       = "";
+let currentFile     = null;
+let currentTranscript = "";
+let savedMeetingId  = null;
+
+// ── tab switching ────────────────────────────────────────────────────────
+function switchTab(tab) {
+  const isGenerate = tab === "generate";
+  document.getElementById("panel-generate").style.display  = isGenerate ? "" : "none";
+  document.getElementById("main-generate").style.display   = isGenerate ? "" : "none";
+  document.getElementById("panel-archive").style.display   = isGenerate ? "none" : "";
+  document.getElementById("main-archive").style.display    = isGenerate ? "none" : "";
+  document.getElementById("tab-generate").classList.toggle("active", isGenerate);
+  document.getElementById("tab-archive").classList.toggle("active",  !isGenerate);
+  if (!isGenerate) loadArchive();
+}
+
+// ── file input helpers ───────────────────────────────────────────────────
+function onFileChange(e) {
+  const file = e.target.files[0];
+  if (file) setFile(file);
+}
+
+function setFile(file) {
+  currentFile = file;
+  const el = document.getElementById("file-selected-name");
+  el.textContent = `✓ ${file.name} (${(file.size/1024/1024).toFixed(1)} MB)`;
+  el.style.display = "block";
+  checkReady();
+  setStep(2);
+}
+
+function onDragOver(e)  { e.preventDefault(); document.getElementById("upload-zone").classList.add("drag-over"); }
+function onDragLeave(e) { document.getElementById("upload-zone").classList.remove("drag-over"); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById("upload-zone").classList.remove("drag-over");
+  const file = e.dataTransfer.files[0];
+  if (file) setFile(file);
+}
+
+function onTranscriptChange() {
+  checkReady();
+  if (document.getElementById("transcript-input").value.trim()) setStep(2);
+}
+
+function checkReady() {
+  const hasInput = currentFile || document.getElementById("transcript-input").value.trim();
+  document.getElementById("generate-btn").disabled = !hasInput;
+}
+
+// ── step pills ───────────────────────────────────────────────────────────
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById(`step-${i}`);
+    el.classList.remove("active","done");
+    if (i < n) el.classList.add("done");
+    else if (i === n) el.classList.add("active");
+  }
+}
+
+// ── progress helpers ─────────────────────────────────────────────────────
+function showProgress(label, sub, pct) {
+  document.getElementById("empty-state").style.display   = "none";
+  document.getElementById("output-wrap").style.display   = "none";
+  document.getElementById("progress-wrap").style.display = "flex";
+  document.getElementById("progress-label").textContent  = label;
+  document.getElementById("progress-sub").textContent    = sub;
+  document.getElementById("progress-bar").style.width    = pct + "%";
+}
+
+function showOutput() {
+  document.getElementById("progress-wrap").style.display = "none";
+  document.getElementById("output-wrap").style.display   = "block";
+}
+
+// ── main pipeline ────────────────────────────────────────────────────────
+// Wake the Render server (free tier spins down after inactivity).
+// Retries up to 4x with increasing delays, showing progress to the user.
+async function ensureServerAwake() {
+  const maxAttempts = 4;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 12000); // 12s per attempt
+      const res = await fetch(`${BACKEND_URL}/health`, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (res.ok) return true;
+    } catch(_) {}
+    if (attempt < maxAttempts) {
+      const wait = attempt * 8; // 8s, 16s, 24s
+      showProgress(
+        "Server is starting up…",
+        `Render free tier spins down after inactivity · attempt ${attempt}/${maxAttempts} · retrying in ${wait}s`,
+        Math.round((attempt / maxAttempts) * 25)
+      );
+      await new Promise(r => setTimeout(r, wait * 1000));
+    }
+  }
+  throw new Error("Server didn't respond after several attempts. Try again in a moment — it may still be starting up.");
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 180000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: ctrl.signal });
+    clearTimeout(timer);
+    return res;
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === "AbortError") throw new Error("Request timed out. The server may be overloaded — please try again.");
+    throw e;
+  }
+}
+
+async function runPipeline() {
+  const btn    = document.getElementById("generate-btn");
+  const errEl  = document.getElementById("sidebar-error");
+  errEl.style.display = "none";
+  savedMeetingId = null;
+  document.getElementById("save-btn").textContent = "☁ Save to Archive";
+  document.getElementById("save-btn").disabled = false;
+
+  btn.disabled = true;
+  btn.textContent = "Working…";
+  setStep(3);
+
+  try {
+    // ── Step 0: wake server ───────────────────────────────────────────
+    showProgress("Connecting to server…", "Checking if server is awake (free tier may need ~30–60 s to start)", 5);
+    await ensureServerAwake();
+
+    // ── Step 1: transcription (if audio file) ────────────────────────
+    let transcript = document.getElementById("transcript-input").value.trim();
+
+    if (currentFile && !transcript) {
+      showProgress("Transcribing audio…", "Sending to Groq Whisper · may take 10–30 s", 30);
+      const fd = new FormData();
+      fd.append("audio", currentFile, currentFile.name);
+      const res = await fetchWithTimeout(`${BACKEND_URL}/transcribe`, { method:"POST", body: fd });
+      if (!res.ok) { const t = await res.text(); throw new Error(`Transcription failed: ${t}`); }
+      const data = await res.json();
+      transcript = data.transcript;
+      currentTranscript = transcript;
+    } else {
+      currentTranscript = transcript;
+    }
+
+    // ── Step 2: generate minutes ──────────────────────────────────────
+    showProgress("Generating minutes…", "Formatting with Llama 3.3 70B · usually under 20 s", 65);
+
+    const fd2 = new FormData();
+    fd2.append("transcript", transcript);
+    fd2.append("title",      document.getElementById("m-title").value.trim());
+    fd2.append("date",       formatDateDisplay(document.getElementById("m-date").value.trim()));
+    fd2.append("attendees",  document.getElementById("m-attendees").value.trim());
+
+    const res2 = await fetchWithTimeout(`${BACKEND_URL}/generate`, { method:"POST", body: fd2 });
+    if (!res2.ok) { const t = await res2.text(); throw new Error(`Generation failed: ${t}`); }
+    const data2 = await res2.json();
+    currentMd = data2.minutes_md;
+
+    // ── Step 3: render ────────────────────────────────────────────────
+    showProgress("Rendering…", "Almost done", 95);
+    document.getElementById("minutes-doc").innerHTML = renderMarkdown(currentMd);
+    showOutput();
+    setStep(3);
+    document.getElementById("step-3").classList.replace("active","done");
+    // On mobile, collapse sidebar so output is visible
+    if (window.innerWidth <= 700) {
+      document.getElementById("panel-generate").classList.add("mobile-collapsed");
+      document.getElementById("main-generate").scrollIntoView({ behavior:"smooth" });
+    }
+
+  } catch(e) {
+    showError(e.message);
+    document.getElementById("progress-wrap").style.display = "none";
+    document.getElementById("empty-state").style.display   = "flex";
+    setStep(1);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Generate Minutes";
+  }
+}
+
+function mobileBack() {
+  document.getElementById("panel-generate").classList.remove("mobile-collapsed");
+  document.getElementById("panel-generate").scrollIntoView({ behavior:"smooth" });
+}
+
+function showError(msg) {
+  const el = document.getElementById("sidebar-error");
+  el.textContent = msg;
+  el.style.display = "block";
+  showToast(msg, "error");
+}
+
+// ── markdown renderer ────────────────────────────────────────────────────
+function renderMarkdown(md) {
+  const lines = md.split("\n");
+  let html = "", inTable = false, inTbody = false, inOl = false, inUl = false;
+  let metaLines = [];
+  let metaMode = false;
+
+  const closeTable = () => {
+    if (inTable) { html += "</tbody></table></div>"; inTable = false; inTbody = false; }
+  };
+  const closeList  = () => {
+    if (inOl) { html += "</ol>"; inOl = false; }
+    if (inUl) { html += "</ul>"; inUl = false; }
+  };
+  const flushMeta  = () => {
+    if (metaLines.length) {
+      html += `<div class="meta-block">${metaLines.join("")}</div>`;
+      metaLines = []; metaMode = false;
+    }
+  };
+  const inline = t => esc(t)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g,     "<em>$1</em>");
+  const esc    = s => String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+  for (const line of lines) {
+    // H1
+    if (line.startsWith("# ")) {
+      closeTable(); closeList(); flushMeta();
+      html += `<h1>${inline(line.slice(2))}</h1>`;
+      metaMode = true; continue;
+    }
+    // H2
+    if (line.startsWith("## ")) {
+      closeTable(); closeList(); flushMeta();
+      html += `<h2>${inline(line.slice(3))}</h2>`;
+      metaMode = false; continue;
+    }
+    // HR
+    if (/^---+$/.test(line.trim())) {
+      closeTable(); closeList(); flushMeta();
+      continue;
+    }
+    // meta lines (**Key:** value)
+    if (metaMode && /^\*\*/.test(line) && line.includes(":**")) {
+      metaLines.push(`<p class="meta-line">${inline(line)}</p>`);
+      continue;
+    }
+    if (metaMode && !line.trim()) { continue; }
+    // table
+    if (line.trim().startsWith("|")) {
+      closeList(); flushMeta();
+      const cells = line.split("|").slice(1,-1);
+      if (cells.every(c => /^[-: ]+$/.test(c))) {
+        html += "</thead><tbody>"; inTbody = true; continue;
+      }
+      if (!inTable) {
+        html += '<div style="overflow-x:auto;width:100%;margin-bottom:4px"><table><thead><tr>';
+        cells.forEach(c => { html += `<th>${inline(c.trim())}</th>`; });
+        html += "</tr>"; inTable = true;
+      } else if (inTbody) {
+        html += "<tr>";
+        cells.forEach(c => { html += `<td>${inline(c.trim())}</td>`; });
+        html += "</tr>";
+      }
+      continue;
+    } else if (inTable) {
+      closeTable();
+    }
+    // numbered list
+    const nm = line.match(/^(\d+)\.\s+(.*)/);
+    if (nm) {
+      closeTable(); flushMeta();
+      if (!inOl) { if (inUl) { html += "</ul>"; inUl = false; } html += "<ol>"; inOl = true; }
+      html += `<li>${inline(nm[2])}</li>`; continue;
+    }
+    // bullet
+    if (/^[-*]\s+/.test(line)) {
+      closeTable(); flushMeta();
+      if (!inUl) { if (inOl) { html += "</ol>"; inOl = false; } html += "<ul>"; inUl = true; }
+      html += `<li>${inline(line.replace(/^[-*]\s+/,""))}</li>`; continue;
+    }
+    // blank
+    if (!line.trim()) {
+      closeList(); closeTable();
+      if (!metaMode) flushMeta();
+      continue;
+    }
+    // plain
+    closeTable(); closeList(); flushMeta();
+    html += `<p style="font-size:13px;margin:3px 0">${inline(line)}</p>`;
+  }
+  closeTable(); closeList(); flushMeta();
+  return html;
+}
+
+// ── export actions ───────────────────────────────────────────────────────
+function copyMarkdown() {
+  navigator.clipboard.writeText(currentMd).then(() => {
+    const btn = document.getElementById("copy-btn");
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => btn.textContent = "⎘ Copy Markdown", 2000);
+    showToast("Markdown copied to clipboard", "success");
+  });
+}
+
+function downloadMarkdown() {
+  if (!currentMd) return;
+  const fname = slugTitle() + ".md";
+  const a = Object.assign(document.createElement("a"), {
+    href: URL.createObjectURL(new Blob([currentMd], {type:"text/markdown"})),
+    download: fname,
+  });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast(`Downloaded ${fname}`, "success");
+}
+
+async function downloadDocx() {
+  if (!currentMd) return;
+  const btn = event.currentTarget;
+  const orig = btn.textContent;
+  btn.textContent = "↓ Building…"; btn.disabled = true;
+  try {
+    const fd = new FormData();
+    fd.append("minutes_md", currentMd);
+    fd.append("filename",   slugTitle());
+    const res = await fetch(`${BACKEND_URL}/export/docx`, { method:"POST", body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement("a"), { href: url, download: slugTitle() + ".docx" });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Downloaded .docx", "success");
+  } catch(e) {
+    showToast("Export failed: " + e.message, "error");
+  } finally {
+    btn.textContent = orig; btn.disabled = false;
+  }
+}
+
+async function saveToArchive() {
+  if (!currentMd) return;
+  if (savedMeetingId) { showToast("Already saved", "success"); return; }
+  const btn = document.getElementById("save-btn");
+  btn.disabled = true; btn.textContent = "Saving…";
+  try {
+    const fd = new FormData();
+    fd.append("minutes_md", currentMd);
+    fd.append("transcript", currentTranscript);
+    fd.append("title",      document.getElementById("m-title").value.trim()     || extractTitle());
+    fd.append("date",       formatDateDisplay(document.getElementById("m-date").value.trim()));
+    fd.append("attendees",  document.getElementById("m-attendees").value.trim());
+    const res = await fetch(`${BACKEND_URL}/save`, { method:"POST", body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    savedMeetingId = data.id;
+    btn.textContent = "✓ Saved";
+    showToast("Saved to archive", "success");
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = "☁ Save to Archive";
+    showToast("Save failed: " + e.message, "error");
+  }
+}
+
+// ── archive ──────────────────────────────────────────────────────────────
+async function loadArchive() {
+  const grid = document.getElementById("archive-grid");
+  grid.innerHTML = `<div class="archive-empty">Loading…</div>`;
+  try {
+    const res  = await fetch(`${BACKEND_URL}/minutes`);
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    if (!data.meetings.length) {
+      grid.innerHTML = `<div class="archive-empty">No meetings archived yet.</div>`; return;
+    }
+    grid.innerHTML = data.meetings.map(m => `
+      <div class="archive-card" onclick="openArchiveMeeting('${m.id}')">
+        <p class="archive-card-title">${esc(m.title || "Untitled Meeting")}</p>
+        <p class="archive-card-meta">
+          ${m.date ? `📅 ${esc(m.date)}<br>` : ""}
+          ${m.attendees ? `👥 ${esc(m.attendees)}<br>` : ""}
+          <span style="opacity:.6">${new Date(m.created_at).toLocaleDateString("en-CA",{dateStyle:"medium"})}</span>
+        </p>
+      </div>`).join("");
+  } catch(e) {
+    grid.innerHTML = `<div class="archive-empty">Could not load archive: ${esc(e.message)}</div>`;
+  }
+}
+
+async function openArchiveMeeting(id) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/minutes/${id}`);
+    if (!res.ok) throw new Error(await res.text());
+    const m = await res.json();
+    // switch to generate tab and populate output
+    switchTab("generate");
+    currentMd = m.minutes_md;
+    currentTranscript = m.transcript || "";
+    savedMeetingId = id;
+    document.getElementById("m-title").value     = m.title     || "";
+    document.getElementById("m-date").value      = m.date      || "";
+    document.getElementById("m-attendees").value = m.attendees || "";
+    document.getElementById("minutes-doc").innerHTML = renderMarkdown(currentMd);
+    document.getElementById("empty-state").style.display   = "none";
+    document.getElementById("progress-wrap").style.display = "none";
+    document.getElementById("output-wrap").style.display   = "block";
+    document.getElementById("save-btn").textContent = "✓ Saved";
+    document.getElementById("save-btn").disabled   = true;
+    setStep(3);
+    document.getElementById("step-3").classList.replace("active","done");
+  } catch(e) {
+    showToast("Could not load meeting: " + e.message, "error");
+  }
+}
+
+// ── utils ────────────────────────────────────────────────────────────────
+function extractTitle() {
+  const m = currentMd.match(/^#\s+(.+)/m);
+  return m ? m[1].replace(/^Meeting Minutes\s*[-–]\s*/i,"").trim() : "Meeting Minutes";
+}
+
+function formatDateDisplay(val) {
+  if (!val) return '';
+  // val is YYYY-MM-DD from date input
+  const [y, m, d] = val.split('-').map(Number);
+  const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${names[m-1]} ${d}, ${y}`;
+}
+
+function slugTitle() {
+  const title = extractTitle().toLowerCase().replace(/[^\w\s-]/g,"").replace(/\s+/g,"-").slice(0,50);
+  const dateVal = document.getElementById("m-date").value.trim();
+  const datePart = dateVal ? "-" + dateVal : "";  // already YYYY-MM-DD, clean for filename
+  return (title + datePart) || "meeting-minutes";
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+let toastTimer;
+function showToast(msg, type="success") {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className   = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 3500);
+}
+</script>
+</body>
+</html>
